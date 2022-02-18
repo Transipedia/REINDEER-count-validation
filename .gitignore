@@ -42,3 +42,4 @@ vignettes/*.pdf
 # my files
 log*.txt
 data/
+results/

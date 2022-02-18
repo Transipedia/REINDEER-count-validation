@@ -33,23 +33,25 @@ stats.tab <- merge(x = stats.tab, y = tx2gene, by = "qname")
 
 cmp.tab <- merge(x = stats.tab, y = kallisto.tab.long, by = c("qgene", "qsample"))
 cmp.tab <- cmp.tab[, c("qgene", "qmean", "qmedian", "qmode", "qmax", "qmin.positive", "qsum", "kallisto")]
-cmp.tab <- cmp.tab[cmp.tab$kallisto >= 1E-5 & cmp.tab$qmedian >= 1E-5 & cmp.tab$qmode >= 1E-5, ]
+cmp.tab.long <- pivot_longer(cmp.tab, cols = c(-qgene, -kallisto), 
+                             names_to = "metrics", values_to = "value")
+cmp.tab.long <- cmp.tab.long[cmp.tab.long$value >= 1E-5 & cmp.tab.long$kallisto >= 1E-5, ]
 cmp.corr.ps <- lapply(list("qmean", "qmedian", "qmode", "qmax", "qmin.positive", "qsum"), 
                       FUN = function(m) 
                           return(data.frame("metrics" = m, 
-                                            "cor.ps" = cor(cmp.tab[, m], cmp.tab[, "kallisto"], 
+                                            "cor.ps" = cor(cmp.tab.long$value[cmp.tab.long$metrics == m], 
+                                                           cmp.tab.long$kallisto[cmp.tab.long$metrics == m], 
                                                            method = "pearson")))) %>%
     do.call(what = rbind)
 cmp.corr.sp <- lapply(list("qmean", "qmedian", "qmode", "qmax", "qmin.positive", "qsum"), 
                       FUN = function(m) 
                           return(data.frame("metrics" = m, 
-                                            "cor.sp" = cor(cmp.tab[, m], cmp.tab[, "kallisto"], 
+                                            "cor.sp" = cor(cmp.tab.long$value[cmp.tab.long$metrics == m], 
+                                                           cmp.tab.long$kallisto[cmp.tab.long$metrics == m], 
                                                            method = "spearman")))) %>%
     do.call(what = rbind)
 cmp.corr <- merge(cmp.corr.ps, cmp.corr.sp, by = "metrics")
 cmp.corr$ypos <- c(50000, 9000, 9000, no = 5000, 5000, 1E7)
-cmp.tab.long <- pivot_longer(cmp.tab, names_to = "metrics", values_to = "value", 
-                             cols = c(-qgene, -kallisto))
 cmp.tab.long$value <- as.numeric(cmp.tab.long$value)
 
 cmp.tab.long$metrics <- factor(cmp.tab.long$metrics, 
