@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#PBS -N reindeer_query
+#PBS -q ssfa
+#PBS -m ea
+#PBS -M haoliang.xue@i2bc.paris-saclay.fr
+
+set -e
+
+#reindeer="/home/haoliang.xue/tools/Reindeer-new"
+reindeer="/store/EQUIPES/SSFA/haoliang-shared/Reindeer.sif"
+
+workdir="/store/EQUIPES/SSFA/MEMBERS/haoliang.xue/reindeer_appli"
+idxprefix="/store/EQUIPES/SSFA/Data/CCLE/CCLE12_rmAdapt"
+
+contigsprefix=$workdir"/data/krator-1000-random-genes_contigs-"
+outprefix=$workdir"/ccle-12smp/gene-level/reindeer_query"
+
+for k in `echo 21 31`
+do
+	contigsfa=$contigsprefix$k.fa
+	echo $contigsfa
+	g=$outprefix/CCLE-12-lung-k$k-cutadapt
+	mkdir -p $g
+	for p in `echo 100 70 40 0`
+	do
+		# $reindeer Reindeer --query -P $p -q $contigsfa -l $idxprefix"k"$k"_cutadapt" -o $g
+		singularity exec --bind /store:/store $reindeer Reindeer --query -P $p -q $contigsfa -l $idxprefix"k"$k"_cutadapt" -o $g
+	done
+done
+
+# old commands with singularity
