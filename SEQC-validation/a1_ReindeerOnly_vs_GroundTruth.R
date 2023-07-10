@@ -1,13 +1,14 @@
 rm(list = ls())
 
 library(tidyr)
+library(stringr)
 library(ggplot2)
 library(ggpointdensity)
 library(patchwork)
 
-WKDIR <- "~/Google Drive/My Drive/ReindeerAppli/"
-INDIR <- paste0(WKDIR, "Data/transfer_5293270_files_2d94b58d/")
-OUTDIR <- paste0(WKDIR, "Results/reindeer2taqman/")
+WKDIR <- "~/Projects/working-bench/ReindeerAppli/"
+INDIR <- paste0(WKDIR, "data/")
+OUTDIR <- paste0(WKDIR, "Results/reindeeronly/")
 
 if (!dir.exists(OUTDIR)) {
     dir.create(OUTDIR, recursive = TRUE)
@@ -15,17 +16,21 @@ if (!dir.exists(OUTDIR)) {
 }
 
 # Load and parse Taqman table
-tab.taqman <- read.table(paste0(INDIR, "taqman-raw_final_mean.csv"),
+tab.taqman <- read.table(paste0(INDIR, "merged-Taqman-raw_reindeer-IDs_tab.tsv"),
                          header = TRUE, sep = "\t") %>%
-    dplyr::select(-EntrezID) %>%
     pivot_longer(cols = -Symbol, values_to = "Counts.true", names_to = "Sample.assay")
 
 # Load and parse Reindeer table
-tab.reindeer <- read.table(paste0(INDIR, "SEQC-genes_on_SEQC_raw_counts.out"),
-                           header = TRUE) %>%
-    pivot_longer(cols = -seq_name, values_to = "Query.reindeer", names_to = "Sample.assay") %>%
-    dplyr::mutate(Symbol = lapply(seq_name,
-                                  FUN = function(x) strsplit(x, split = ":")[[1]][1]) %>% unlist())
+ensg2symbol <- read.table(paste0(INDIR, "geneSymbol_SEQC_to_ENST.tsv"), sep = "\t",
+                          header = FALSE) %>%
+    dplyr::filter(V1 != "C10orf93") %>%
+    tibble::column_to_rownames("V2")
+tab.reindeer <- read.table(paste0(INDIR, "reindeerOnly/SEQC-genes-whole-canonical-seq_on_SEQC_raw_counts_k31.out"),
+                           header = TRUE, sep = "\t") %>%
+    dplyr::mutate(seq_name = str_remove_all(seq_name, " ")) %>%
+    dplyr::mutate(Symbol = ensg2symbol[seq_name, "V1"]) %>%
+    dplyr::select(-seq_name) %>%
+    pivot_longer(cols = -Symbol, values_to = "Query.reindeer", names_to = "Sample.assay") 
 tab.reindeer <- aggregate(tab.reindeer$Query.reindeer,
                           by = list(tab.reindeer$Symbol, tab.reindeer$Sample.assay),
                           FUN = function(qs) paste0(qs, collapse = ",")) %>%
@@ -45,7 +50,7 @@ tab.reindeer <- aggregate(tab.reindeer$Query.reindeer,
                                                                                  yes = as.integer(q),
                                                                                  no = 0),
                                                                           e - b + 1))
-                                                      }
+                                                  }
                                               }
                                               return(count.vect)
                                           })) %>%
@@ -87,5 +92,10 @@ plt_lst <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
                           theme_bw() +
                           theme(text = element_text(size = 15), legend.position = "none")
                   })
+
+ggsave(plt_lst[[1]], filename = paste0(OUTDIR, "Fig1a_reindeerOnly.k31.mean.svg"),
+       width = 5, height = 5)
+
 ggsave((plt_lst[[1]] | plt_lst[[2]]) / (plt_lst[[3]] | plt_lst[[4]]),
-       filename = paste0(OUTDIR, "scatter_density.pdf"), width = 9, height = 5)
+       filename = paste0(OUTDIR, "SupplFig_reindeerOnly.k31.4metrics.svg"),
+       width = 9, height = 5)
