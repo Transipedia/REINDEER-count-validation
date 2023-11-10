@@ -7,7 +7,7 @@ library(patchwork)
 
 WKDIR <- "~/Projects/working-bench/ReindeerAppli/"
 INDIR <- paste0(WKDIR, "data/")
-OUTDIR <- paste0(WKDIR, "Results/reindeer-kmerator2taqman/")
+OUTDIR <- paste0(WKDIR, "res_cmp2SEQC/reindeer-kmerator2taqman/")
 
 if (!dir.exists(OUTDIR)) {
     dir.create(OUTDIR, recursive = TRUE)
@@ -78,22 +78,24 @@ plt_lst <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
                       ggplot() +
                           geom_pointdensity(aes(x = cmp.tab[, "Counts.true"] + 1,
                                                 y = cmp.tab[, mthd] + 1),
-                                            size = 1) +
+                                            size = 0.1) +
                           geom_text(aes(x = Inf, y = 1, 
                                         label = paste0("Pearson: ", round(cor.tab[mthd, "corr.pearson"], 2), "\n",
                                                        "Spearman: ", round(cor.tab[mthd, "corr.spearman"], 2))),
                                     size = 5, hjust = 1, vjust = 0) +
-                          xlab("Count.true + 1") +
-                          ylab(paste0(mthd, " + 1")) +
+                          xlab("SEQC/MAQC-III qPCR") +
+                          ylab(paste0(mthd)) +
+                          scale_colour_gradient(low = "#56B1F7", high = "#132B43") +
+                          scale_x_log10(breaks = c(1, 6, 11, 21, 31),
+                                        labels = c(0, 5, 10, 20, 30)) +
+                          scale_y_log10(breaks = c(1, 6, 11, 21, 31),
+                                        labels = c(0, 5, 10, 20, 30)) +
                           scale_x_log10() +
                           scale_y_log10() +
                           theme_bw() +
                           theme(text = element_text(size = 15), legend.position = "none")
                   })
 
-ggsave(plt_lst[[1]], filename = paste0(OUTDIR, "Fig1b_kmerator-reindeer.k31.mean.svg"),
-       width = 5, height = 5)
-
 ggsave((plt_lst[[1]] | plt_lst[[2]]) / (plt_lst[[3]] | plt_lst[[4]]),
-       filename = paste0(OUTDIR, "SupplFig_kmerator-reindeer.k31.4metrics.svg"),
-       width = 9, height = 5)
+       filename = paste0(OUTDIR, "SupplFig_kmerator-reindeer.k31.4metrics.png"),
+       width = 9, height = 5, dpi = 600)

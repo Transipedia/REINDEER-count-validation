@@ -7,7 +7,7 @@ library(patchwork)
 
 WKDIR <- "~/Projects/working-bench/ReindeerAppli/"
 INDIR <- paste0(WKDIR, "data/")
-OUTDIR <- paste0(WKDIR, "res_cmp2Kallisto/reindeer-kmerator2kallisto/")
+OUTDIR <- paste0(WKDIR, "res_cmp2Kallisto/reindeeronly/")
 
 if (!dir.exists(OUTDIR)) {
     dir.create(OUTDIR, recursive = TRUE)
@@ -15,7 +15,13 @@ if (!dir.exists(OUTDIR)) {
 }
 
 # Transcript ID to gene symbol
-syno2symbol <- read.table(paste0(INDIR, "missing_genes.tsv"), header = FALSE, row.names = 1)
+enst2symbol <- read.table(paste0(INDIR, "geneSymbol_SEQC_to_ENST.tsv"), sep = "\t",
+                          header = FALSE) %>%
+    dplyr::filter(V1 != "C10orf93") %>%
+    tibble::column_to_rownames("V2")
+syno2symbol <- read.table(paste0(INDIR, "missing_genes.tsv"), header = FALSE, row.names = 3)
+all(enst2symbol[rownames(syno2symbol), "V1"] == syno2symbol$V1)
+enst2symbol[rownames(syno2symbol), "V1"] <- syno2symbol$V2
 
 # Gene ID to gene symbol
 id2symbol <- read.table(paste0(INDIR, "Homo_sapiens.GRCh38.108.gtf"), sep = "\t") %>%
@@ -41,8 +47,9 @@ tab.abundance <- read.table(paste0(INDIR, "kallisto-ensembl108/gene-abundance-tx
     dplyr::mutate(Symbol = id2symbol[ID, "SYMBOL"])
 
 # Load and parse Reindeer table
-tab.reindeer <- read.table(paste0(INDIR, "kmerator-reindeer/SEQC-genes_on_SEQC_raw_counts_k31_kmerator.out"),
+tab.reindeer <- read.table(paste0(INDIR, "reindeeronly/SEQC-genes-whole-canonical-seq_on_SEQC_raw_counts_k31.out"),
                            header = TRUE, sep = "\t") %>%
+    dplyr::mutate(seq_name = enst2symbol[seq_name, "V1"]) %>%
     dplyr::mutate(seq_name = str_replace(seq_name, "C10orf93", "C10orf92")) %>%
     unique() %>%
     pivot_longer(cols = -seq_name, values_to = "Query.reindeer", names_to = "Sample.assay") %>%
@@ -81,9 +88,6 @@ tab.reindeer <- aggregate(tab.reindeer$Query.reindeer,
                   Sum.reindeer = lapply(Count.reindeer,
                                         FUN = function(x) ifelse(!is.null(x), yes = sum(x), no = 0)) %>% unlist()) %>%
     dplyr::select(-Count.reindeer)
-
-to_consider <- tab.reindeer$Symbol %in% rownames(syno2symbol)
-tab.reindeer[to_consider, "Symbol"] <- syno2symbol[tab.reindeer$Symbol[to_consider], "V2"]
 
 # Merge tables to compare
 cmp.tab <- merge(tab.count, tab.abundance, by = c("ID", "Symbol", "Sample.assay"))
@@ -125,7 +129,7 @@ for (col2cor in c("Kallisto.counts", "Kallisto.TPM")) {
                               theme(text = element_text(size = 15), legend.position = "none")
                       })
     ggsave((plt_lst[[1]] | plt_lst[[2]]) / (plt_lst[[3]] | plt_lst[[4]]),
-           filename = paste0(OUTDIR, "SupplFig_kmerator-reindeer.", col2cor, ".k31.4metrics.png"),
+           filename = paste0(OUTDIR, "SupplFig_reindeerOnly.", col2cor, ".k31.4metrics.png"),
            width = 9, height = 5, dpi = 600)
 }
 
@@ -133,5 +137,6 @@ for (col2cor in c("Kallisto.counts", "Kallisto.TPM")) {
 all((cmp.tab$Kallisto.counts > 0) == (cmp.tab$Kallisto.TPM > 0))
 all((cmp.tab$Mean.reindeer == 0) == (cmp.tab$Max.reindeer == 0))
 write.table(cmp.tab[cmp.tab$Mean.reindeer == 0 & cmp.tab$Kallisto.counts > 0, ],
-            paste0(OUTDIR, "kmerator-reindeer_Dropped.tsv"),
+            paste0(OUTDIR, "ReindeerOnly_Dropped.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
+            
