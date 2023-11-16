@@ -81,4 +81,4 @@ tab.without <- aggregate(tab.without$Query.without,
 
 # Merged table
 tab.merged <- merge(tab.with, tab.without)
-write.table(tab.merged, paste0(OUTDIR, "REINDEER_query_mean.tsv"), quote = FALSE)
+write.table(tab.merged, paste0(OUTDIR, "REINDEER_query_mean.tsv"), quote = FALSE, sep = "\t", row.names = FALSE)
