@@ -11,8 +11,11 @@ INDIR <- paste0(WKDIR, "data/1000ERV-56samples/")
 OUTDIR <- paste0(WKDIR, "res_HERV1000/")
 
 # Load and parse Taqman table
-tab.TE <- read.table(paste0(INDIR, "Telescope_rmsk_colon_CPM_1000.tsv"),
-                     header = TRUE, sep = "\t") %>%
+old.tab <- read.table(paste0(INDIR, "Telescope_rmsk_colon_CPM_1000.tsv"), header = TRUE)
+tab.TE <- read.table(paste0(INDIR, "Telescope_rmsk_colon_RAW.tsv"),
+                     header = TRUE, sep = "\t")
+colnames(tab.TE) <- colnames(old.tab)
+tab.TE <- tab.TE[tab.TE$Transcript %in% old.tab$Transcript, ] %>%    
     pivot_longer(cols = -Transcript, values_to = "Counts.Telescope", names_to = "Sample.assay") %>%
     dplyr::rename(Symbol = Transcript)
 
@@ -59,6 +62,9 @@ tab.reindeer <- aggregate(tab.reindeer$Query.reindeer,
 # Merge tables to compare
 cmp.tab <- merge(tab.TE, tab.reindeer, by = c("Symbol", "Sample.assay"))
 write.table(cmp.tab, file = paste0(OUTDIR, "TE_vs_Kmerator-Reindeer.4metrics.csv"),
+            row.names = FALSE, quote = FALSE, sep = "\t")
+write.table(cmp.tab[cmp.tab$Counts.Telescope == 0 & cmp.tab$Max.reindeer > 0, ],
+            file = paste0(OUTDIR, "TE_vs_Kmerator-Reindeer.questionable.4metrics.csv"),
             row.names = FALSE, quote = FALSE, sep = "\t")
 # Compute correlations
 cor.tab <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
