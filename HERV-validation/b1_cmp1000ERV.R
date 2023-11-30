@@ -93,9 +93,7 @@ plt_lst <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
                           scale_y_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001),
                                         labels = c(0, 10, 100, 1000, 10000, 100000, 1000000)) +
                           theme_bw() +
-                          theme(text = element_text(size = 15),
-                                legend.position = "none",
-                                panel.grid = element_blank())
+                          theme(text = element_text(size = 15), legend.position = "none")
                   })
 
 ggsave((plt_lst[[1]] | plt_lst[[2]]) / (plt_lst[[3]] | plt_lst[[4]]),
