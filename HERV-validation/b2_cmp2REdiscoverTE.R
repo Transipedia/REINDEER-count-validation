@@ -73,6 +73,7 @@ write.table(cmp.tab, file = paste0(OUTDIR, "REdiscoverTE_vs_Kmerator-Reindeer.4m
 write.table(cmp.tab[cmp.tab$count.REdiscoverTE == 0 & cmp.tab$Max.reindeer > 0, ],
             file = paste0(OUTDIR, "REdiscoverTE_vs_Kmerator-Reindeer.questionable.4metrics.csv"),
             row.names = FALSE, quote = FALSE, sep = "\t")
+
 # Compute correlations
 cor.tab <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
                   FUN = function(mthd) {
@@ -102,11 +103,12 @@ plt_lst <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
                           scale_y_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001, 10000001),
                                         labels = c(0, 10, 100, 1000, 10000, 100000, 1000000, 10000000)) +
                           theme_bw() +
-                          theme(text = element_text(size = 15), legend.position = "none")
+                          theme(text = element_text(size = 15), legend.position = "none",
+                                panel.grid = element_blank())
                   })
 
 ggsave((plt_lst[[1]] | plt_lst[[2]]) / (plt_lst[[3]] | plt_lst[[4]]),
-       filename = paste0(OUTDIR, "REdiscoverTE-raw_vs_Kmerator-Reindeer.4metrics.png"),
+       filename = paste0(OUTDIR, "REdiscoverTE-raw_vs_Kmerator-Reindeer.4metrics.pdf"),
        width = 9, height = 5, dpi = 600)
 
 plt_lst <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
@@ -127,9 +129,10 @@ plt_lst <- lapply(paste0(c("Mean", "Median", "Max", "Sum"), ".reindeer"),
                           scale_y_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001, 10000001),
                                         labels = c(0, 10, 100, 1000, 10000, 100000, 1000000, 10000000)) +
                           theme_bw() +
-                          theme(text = element_text(size = 15), legend.position = "none")
+                          theme(text = element_text(size = 15), legend.position = "none",
+                                panel.grid = element_blank())
                   })
 
 ggsave((plt_lst[[1]] | plt_lst[[2]]) / (plt_lst[[3]] | plt_lst[[4]]),
-       filename = paste0(OUTDIR, "REdiscoverTE-CPM_vs_Kmerator-Reindeer.4metrics.png"),
+       filename = paste0(OUTDIR, "REdiscoverTE-CPM_vs_Kmerator-Reindeer.4metrics.pdf"),
        width = 9, height = 5, dpi = 600)
