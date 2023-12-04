@@ -132,6 +132,8 @@ for (col2cor in c("Kallisto.counts", "Kallisto.TPM")) {
 # Dropout by Reindeer
 all((cmp.tab$Kallisto.counts > 0) == (cmp.tab$Kallisto.TPM > 0))
 all((cmp.tab$Mean.reindeer == 0) == (cmp.tab$Max.reindeer == 0))
+write.table(cmp.tab, paste0(OUTDIR, "kmerator-reindeer.tsv"),
+            sep = "\t", row.names = FALSE, quote = FALSE)
 write.table(cmp.tab[cmp.tab$Mean.reindeer == 0 & cmp.tab$Kallisto.counts > 0, ],
             paste0(OUTDIR, "kmerator-reindeer_Dropped.tsv"),
             sep = "\t", row.names = FALSE, quote = FALSE)
