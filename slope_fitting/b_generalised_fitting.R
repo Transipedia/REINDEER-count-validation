@@ -25,9 +25,9 @@ write.table(fit.tab, paste0(WKDIR, "fitting_slope/fit_tab.tsv"), sep="\t", row.n
 
 # Figure 1: histogram of adjusted R2
 plt1 <- ggplot(na.omit(fit.tab)) +
-    geom_histogram(aes(x = R2), binwidth = 0.1, fill = "royalblue") +
+    geom_histogram(aes(x = R2), binwidth = 0.05, fill = "royalblue", center=0) +
     geom_vline(xintercept = 0.75, color = "navy", linetype = "dashed") +
-    geom_text(aes(x = 0.75, y = 600, label = "Adj.R2 = 0.75"), color = "navy") +
+    geom_text(aes(x = 0.75, y = 600, label = "adj.R2 = 0.75"), color = "navy") +
     xlab("adjusted R-squared") +
     theme_bw() +
     theme(text = element_text(size=15))
@@ -47,7 +47,7 @@ plt_lst <- lapply(top_genes, FUN = function(gene2sel) {
         geom_point(aes(x = Kallisto.counts, y = Sum.reindeer)) +
         geom_text(aes(x = Inf, y = 0,
                       label = paste0("slope = ", round(lm.res$coefficients[2], 2), "\n",
-                                     "adj.R2 = ", round(summary(lm.res)$adj.r.squared, 1))),
+                                     "adj.R2 = ", round(summary(lm.res)$adj.r.squared, 2))),
                   hjust = 1.1, vjust = 0.1) +
         ggtitle(gene2sel) +
         theme_bw() +
@@ -57,7 +57,7 @@ ggsave(wrap_plots(plt_lst, ncol = 5),
        filename = paste0(WKDIR, "fitting_slope/top25_genes_fitted.pdf"),
        width = 15, height = 15)
 
-# Plot best fitting cases
+# Plot OK fitting cases
 ok_genes <- fit.tab.2plot$ID[order(fit.tab.2plot$R2, decreasing = TRUE)[701:725]]
 plt_lst <- lapply(ok_genes, FUN = function(gene2sel) {
     cmp.tab.pos.sub <- cmp.tab.pos[cmp.tab.pos$ID == gene2sel, ]
@@ -66,7 +66,7 @@ plt_lst <- lapply(ok_genes, FUN = function(gene2sel) {
         geom_point(aes(x = Kallisto.counts, y = Sum.reindeer)) +
         geom_text(aes(x = Inf, y = 0,
                       label = paste0("slope = ", round(lm.res$coefficients[2], 2), "\n",
-                                     "adj.R2 = ", round(summary(lm.res)$adj.r.squared, 1))),
+                                     "adj.R2 = ", round(summary(lm.res)$adj.r.squared, 2))),
                   hjust = 1.1, vjust = 0.1) +
         ggtitle(gene2sel) +
         theme_bw() +
@@ -85,7 +85,7 @@ plt_lst <- lapply(bottom_genes, FUN = function(gene2sel) {
         geom_point(aes(x = Kallisto.counts, y = Sum.reindeer)) +
         geom_text(aes(x = Inf, y = 0,
                       label = paste0("slope = ", round(lm.res$coefficients[2], 2), "\n",
-                                     "adj.R2 = ", round(summary(lm.res)$adj.r.squared, 1))),
+                                     "adj.R2 = ", round(summary(lm.res)$adj.r.squared, 2))),
                   hjust = 1.1, vjust = 0.1) +
         ggtitle(gene2sel) +
         theme_bw() +
