@@ -31,10 +31,10 @@ fit_plot <- function(filepath, count_column) {
                                      "Spearman: ", round(cor.tab[mthd, "corr.spearman.raw"], 2), "\n",
                                      "Slope: ", round(fit.res$coefficients[2], 2))),
                   size = 5, hjust = 1, vjust = 0) +
-        scale_x_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001, 10000001),
-                      labels = c(0, 10, 100, 1000, 10000, 100000, 1000000, 10000000)) +
-        scale_y_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001, 10000001),
-                      labels = c(0, 10, 100, 1000, 10000, 100000, 1000000, 10000000)) +
+        # scale_x_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001, 10000001),
+        #               labels = c(0, 10, 100, 1000, 10000, 100000, 1000000, 10000000)) +
+        # scale_y_log10(breaks = c(1, 11, 101, 1001, 10001, 100001, 1000001, 10000001),
+        #               labels = c(0, 10, 100, 1000, 10000, 100000, 1000000, 10000000)) +
         xlab(count_column) +
         ylab(paste0(mthd)) +
         scale_colour_gradient(low = "#56B1F7", high = "#132B43") +
@@ -48,5 +48,5 @@ plt2 <- fit_plot("res_HERV1000/TE_vs_Kmerator-Reindeer.4metrics.csv", "Counts.Te
 plt3 <- fit_plot("res_HERV1000/REdiscoverTE_vs_Kmerator-Reindeer.4metrics.csv", "count.REdiscoverTE")
 
 ggsave(plt1 / plt2 / plt3,
-       filename = paste0(WKDIR, "Fitted_sum2raw.kallisto-Telescope-REdiscoverTE.pdf"),
+       filename = paste0(WKDIR, "Fitted_sum2raw.kallisto-Telescope-REdiscoverTE.nolog.pdf"),
        width = 4.5, height = 7.5, dpi = 600)
